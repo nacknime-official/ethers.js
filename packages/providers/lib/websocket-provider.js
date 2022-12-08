@@ -155,7 +155,8 @@ var WebSocketProvider = /** @class */ (function (_super) {
                 }
             }
             else {
-                console.warn("this should not happen");
+                console.warn(`Unknown response from websocket provider: ${data}`);
+                _this._websocket.close(4000, "this should not happen");
             }
         };
         // This Provider does not actually poll, but we want to trigger

@@ -152,7 +152,8 @@ export class WebSocketProvider extends JsonRpcProvider {
                 }
 
             } else {
-                console.warn("this should not happen");
+                console.warn(`Unknown response from websocket provider: ${data}`);
+                this._websocket.close(4000, "this should not happen");
             }
         };
 
