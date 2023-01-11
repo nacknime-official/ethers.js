@@ -66,6 +66,8 @@ export class WebSocketProvider extends JsonRpcProvider {
 
     _wsReady: boolean;
 
+    _requestTimeout: number;
+
     constructor(url: string | WebSocketLike, network?: Networkish) {
 
         // This will be added in the future; please open an issue to expedite
@@ -82,6 +84,7 @@ export class WebSocketProvider extends JsonRpcProvider {
         }
 
         this._pollingInterval = -1;
+        this._requestTimeout = 60*1000; // 1 minute
 
         this._wsReady = false;
 
@@ -206,7 +209,12 @@ export class WebSocketProvider extends JsonRpcProvider {
         const rid = NextId++;
 
         return new Promise((resolve, reject) => {
+            const timeoutTimer = setTimeout(() => {
+                reject(new Error("timeout"));
+            }, this._requestTimeout);
+
             function callback(error: Error, result: any) {
+                clearTimeout(timeoutTimer);
                 if (error) { return reject(error); }
                 return resolve(result);
             }

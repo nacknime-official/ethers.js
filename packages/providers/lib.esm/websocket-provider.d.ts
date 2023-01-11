@@ -30,6 +30,7 @@ export declare class WebSocketProvider extends JsonRpcProvider {
         [name: string]: Subscription;
     };
     _wsReady: boolean;
+    _requestTimeout: number;
     constructor(url: string | WebSocketLike, network?: Networkish);
     get websocket(): WebSocketLike;
     detectNetwork(): Promise<Network>;

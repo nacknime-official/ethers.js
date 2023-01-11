@@ -21960,6 +21960,7 @@ class WebSocketProvider extends JsonRpcProvider {
             super("_websocket", network);
         }
         this._pollingInterval = -1;
+        this._requestTimeout = 60 * 1000; // 1 minute
         this._wsReady = false;
         if (typeof (url) === "string") {
             defineReadOnly(this, "_websocket", new WS(this.connection.url));
@@ -22022,7 +22023,8 @@ class WebSocketProvider extends JsonRpcProvider {
                 }
             }
             else {
-                console.warn("this should not happen");
+                console.warn(`Unknown response from websocket provider: ${data}`);
+                this._websocket.close(4000, "this should not happen");
             }
         };
         // This Provider does not actually poll, but we want to trigger
@@ -22070,7 +22072,11 @@ class WebSocketProvider extends JsonRpcProvider {
     send(method, params) {
         const rid = NextId++;
         return new Promise((resolve, reject) => {
+            const timeoutTimer = setTimeout(() => {
+                reject(new Error("timeout"));
+            }, this._requestTimeout);
             function callback(error, result) {
+                clearTimeout(timeoutTimer);
                 if (error) {
                     return reject(error);
                 }

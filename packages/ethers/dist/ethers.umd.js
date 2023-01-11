@@ -28462,6 +28462,7 @@
 	            _this = _super.call(this, "_websocket", network) || this;
 	        }
 	        _this._pollingInterval = -1;
+	        _this._requestTimeout = 60 * 1000; // 1 minute
 	        _this._wsReady = false;
 	        if (typeof (url) === "string") {
 	            (0, lib$3.defineReadOnly)(_this, "_websocket", new browserWs.WebSocket(_this.connection.url));
@@ -28524,7 +28525,8 @@
 	                }
 	            }
 	            else {
-	                console.warn("this should not happen");
+	                console.warn("Unknown response from websocket provider: " + data);
+	                _this._websocket.close(4000, "this should not happen");
 	            }
 	        };
 	        // This Provider does not actually poll, but we want to trigger
@@ -28588,7 +28590,11 @@
 	        var _this = this;
 	        var rid = NextId++;
 	        return new Promise(function (resolve, reject) {
+	            var timeoutTimer = setTimeout(function () {
+	                reject(new Error("timeout"));
+	            }, _this._requestTimeout);
 	            function callback(error, result) {
+	                clearTimeout(timeoutTimer);
 	                if (error) {
 	                    return reject(error);
 	                }

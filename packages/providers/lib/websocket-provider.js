@@ -93,6 +93,7 @@ var WebSocketProvider = /** @class */ (function (_super) {
             _this = _super.call(this, "_websocket", network) || this;
         }
         _this._pollingInterval = -1;
+        _this._requestTimeout = 60 * 1000; // 1 minute
         _this._wsReady = false;
         if (typeof (url) === "string") {
             (0, properties_1.defineReadOnly)(_this, "_websocket", new ws_1.WebSocket(_this.connection.url));
@@ -155,7 +156,7 @@ var WebSocketProvider = /** @class */ (function (_super) {
                 }
             }
             else {
-                console.warn(`Unknown response from websocket provider: ${data}`);
+                console.warn("Unknown response from websocket provider: " + data);
                 _this._websocket.close(4000, "this should not happen");
             }
         };
@@ -220,7 +221,11 @@ var WebSocketProvider = /** @class */ (function (_super) {
         var _this = this;
         var rid = NextId++;
         return new Promise(function (resolve, reject) {
+            var timeoutTimer = setTimeout(function () {
+                reject(new Error("timeout"));
+            }, _this._requestTimeout);
             function callback(error, result) {
+                clearTimeout(timeoutTimer);
                 if (error) {
                     return reject(error);
                 }
